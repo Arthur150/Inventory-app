@@ -28,6 +28,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.inventory.data.Item
 import com.example.inventory.databinding.FragmentAddItemBinding
+import java.util.*
 
 /**
  * Fragment to add or update an item in the Inventory database.
@@ -80,6 +81,19 @@ class AddItemFragment : Fragment() {
         }
     }
 
+    private fun updateItem() {
+        if (isEntryValid()) {
+            viewModel.updateItem(
+                this.navigationArgs.itemId,
+                this.binding.itemName.text.toString(),
+                this.binding.itemPrice.text.toString(),
+                this.binding.itemCount.text.toString()
+            )
+            val action = AddItemFragmentDirections.actionAddItemFragmentToItemListFragment()
+            findNavController().navigate(action)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val id = navigationArgs.itemId
@@ -96,11 +110,12 @@ class AddItemFragment : Fragment() {
     }
 
     private fun bind(item: Item) {
-        val price = "%.2f".format(item.itemPrice)
+        val price = "%.2f".format(Locale.US, item.itemPrice) // throw error during save if decimal separator is not "."
         binding.apply {
             itemName.setText(item.itemName, TextView.BufferType.SPANNABLE)
             itemPrice.setText(price, TextView.BufferType.SPANNABLE)
             itemCount.setText(item.quantityInStock.toString(), TextView.BufferType.SPANNABLE)
+            saveAction.setOnClickListener { updateItem() }
         }
     }
 
